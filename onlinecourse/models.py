@@ -108,7 +108,7 @@ class Question(models.Model):
     course   = models.ManyToManyField(Course)
     question = models.TextField()
     grade    = models.IntegerField(default=1)
-   
+    
 
     # <HINT> A sample model method to calculate if learner get the score of the question
     def is_get_score(self, selected_ids):

@@ -138,6 +138,33 @@ def extract_answers(request):
         # For each selected choice, check if it is a correct answer or not
         # Calculate the total score
 def show_exam_result(request, course_id, submission_id):
-    course = get_object_or_404(Course, pk=course_id)
-    submission = get_object_or_404(Submission, pk=submission_id)
-    
+    course = Course.objects.get(pk=course_id)
+    submission = Submission.objects.get(pk=submission_id)
+    submitted_questions = {}
+    for choice_id in submission.choices.all():
+        choice = Choice.objects.get(pk=choice_id)
+        question = choice.question  
+        submitted_questions[question].append(choice_id)
+    # Implicit reverse relationship of many to many relation
+    total_question = course.question_set.all().count()
+    # Many to many reln search
+    # total_question = Question.objects.filter(course=course).count()
+    full_grade = 0
+    for question in course.question_set.all():
+        full_grade += question.grade
+    total_score = 0
+    question_score = {}
+    for question in submitted_questions:
+        submitted_ids = submitted_questions[question]
+        passed = question.is_get_score(submitted_ids)
+        if passed :
+           total_score += question.grade
+        question_score[question.id] = total_score
+    score = (total_score/full_grade) * 100    
+    context = {}
+    context['course'] = course
+    context['selected_ids'] = submission.choices
+    context['grade'] = score
+    context['question_score'] = question_score
+
+    return render(request, 'onlinecourse/exam_result_bootstrap.html', context)
