@@ -130,7 +130,7 @@ class Choice(models.Model):
     course   = models.ManyToManyField(Course)
     choice_content = models.TextField()
     is_correct = models.BooleanField(default = True)
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    question = models.ManyToManyField(Question)
 
 # <HINT> The submission model
 # One enrollment could have multiple submission

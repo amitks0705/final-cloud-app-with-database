@@ -143,8 +143,8 @@ def show_exam_result(request, course_id, submission_id):
     submitted_questions = {}
     for choice_id in submission.choices.all():
         choice = Choice.objects.get(pk=choice_id)
-        question = choice.question  
-        submitted_questions[question].append(choice_id)
+        for question in choice.question.all():
+            submitted_questions[question].append(choice_id)
     # Implicit reverse relationship of many to many relation
     total_question = course.question_set.all().count()
     # Many to many reln search
@@ -154,7 +154,9 @@ def show_exam_result(request, course_id, submission_id):
         full_grade += question.grade
     total_score = 0
     question_score = {}
-    for question in submitted_questions:
+    questionList = list(submitted_questions.keys())
+
+    for question in questionList:
         submitted_ids = submitted_questions[question]
         passed = question.is_get_score(submitted_ids)
         if passed :
