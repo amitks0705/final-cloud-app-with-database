@@ -39,7 +39,7 @@
     {% if grade > 80 %}
     <div class="alert alert-success">
        <!--HINT Display passed info -->
-       <p>{{user.firstname}} passed with score {{grade}} </p>
+       <p>{{user.username}} passed with score {{grade}} </p>
     </div>
         {% else %}
         <div class="alert alert-danger">
@@ -59,7 +59,9 @@
                             <li>{{choice.choice_content}}</li>
                         {% endfor %}
                     </ul>
-                    <p> Score {{question_score[question.id]}} / {{question.grade}} </p>
+                    {% for key, value in question_score.items %}
+                        <p> Qs {{key}} Score {{value}} </p>
+                    {% endfor %}
                 </div>
             {% endfor %}
         </div>

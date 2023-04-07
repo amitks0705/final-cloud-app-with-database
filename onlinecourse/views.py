@@ -91,6 +91,7 @@ class CourseDetailView(generic.DetailView):
     template_name = 'onlinecourse/course_detail_bootstrap.html'
 
 
+
 def enroll(request, course_id):
     course = get_object_or_404(Course, pk=course_id)
     user = request.user
@@ -113,12 +114,19 @@ def enroll(request, course_id):
          # Add each selected choice object to the submission object
          # Redirect to show_exam_result with the submission id
 def submit(request, course_id):
-    course = get_object_or_404(Course, pk=course_id)
+    course = Course.objects.get(pk=course_id)
     user = request.user
-    enrollment = Enrollment.objects.get(user=user,course=course)
+    #enrollment = Enrollment.objects.get(user=user,course=course)
+    enrollment = Enrollment.objects.filter(user=user, course=course)
+    enrl = enrollment[0]
+    #enrollment = course.enrollemt_set.filter(user=user)
     choices = extract_answers(request)
-    Submission.objects.create(choices=choice,enrollment = enrollment)
-    return HttpResponseRedirect(reverse(viewname='onlinecourse:exam_result', args=(course.id,)))
+    submission = Submission.objects.create(enrollment = enrl)
+    for choice_id in choices:
+        choice = Choice.objects.get(pk=choice_id)
+        submission.choices.add(choice)
+    return HttpResponseRedirect(reverse(viewname='onlinecourse:exam_result', args=(course.id,submission.id)))
+    #return HttpResponseRedirect(reverse(viewname='onlinecourse:course_details', args=(course.id,)))
 
 # <HINT> A example method to collect the selected choices from the exam form from the request object
 def extract_answers(request):
@@ -141,10 +149,16 @@ def show_exam_result(request, course_id, submission_id):
     course = Course.objects.get(pk=course_id)
     submission = Submission.objects.get(pk=submission_id)
     submitted_questions = {}
-    for choice_id in submission.choices.all():
-        choice = Choice.objects.get(pk=choice_id)
+    submitted_questions[1] = []
+    for choice in submission.choices.all():
+        #choice = Choice.objects.get(pk=choice_id)
         for question in choice.question.all():
-            submitted_questions[question].append(choice_id)
+            submitted_questions[question.id] = []
+
+    for choice in submission.choices.all():
+        #choice = Choice.objects.get(pk=choice_id)
+        for question in choice.question.all():
+            submitted_questions[question.id].append(choice.id)
     # Implicit reverse relationship of many to many relation
     total_question = course.question_set.all().count()
     # Many to many reln search
@@ -157,11 +171,13 @@ def show_exam_result(request, course_id, submission_id):
     questionList = list(submitted_questions.keys())
 
     for question in questionList:
-        submitted_ids = submitted_questions[question]
-        passed = question.is_get_score(submitted_ids)
+        total_score = 0
+        submitted_ids = list(submitted_questions[question])
+        ques_obj = Question.objects.get(pk=question)
+        passed = ques_obj.is_get_score(submitted_ids)
         if passed :
-           total_score += question.grade
-        question_score[question.id] = total_score
+           total_score += ques_obj.grade
+        question_score[ques_obj.id] = total_score
     score = (total_score/full_grade) * 100    
     context = {}
     context['course'] = course

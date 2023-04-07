@@ -76,11 +76,11 @@
             -->
 
             <!-- A choice submission form example -->
-            <form id="questionform" action="point to a submit view" method="post">
+            <form id="questionform" action="{% url 'onlinecourse:submit' course.id %}" method="post">
                         <!-- ... for each question in the course ... -->
-                        {% for question in course.question_set.all %}
-                        <div class="card mt-1">
-                            <div class="card-header"><h5>{{ question.question}}</h5></div>
+                {% for question in course.question_set.all %}
+                    <div class="card mt-1">
+                        <div class="card-header"><h5>{{ question.question}}</h5></div>
                             {% csrf_token %}
                             <div class="form-group">
                                 {% for choice in question.choice_set.all %}
@@ -93,10 +93,10 @@
                                     </label>
                                 </div>
                                 {% endfor %}
-                            </div>
-                        </div>
-                        {% endfor %}
-                    <input class="btn btn-success btn-block" type="submit" value="Submit">
+                         </div>
+                    </div>
+                {% endfor %}
+                <input class="btn btn-success btn-block" type="submit" value="Submit">
             </form> 
 
             <!--Check here to see more details Bootstrap checkbox
